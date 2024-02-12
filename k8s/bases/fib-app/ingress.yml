@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fib-app
+  labels: {}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+  - hosts:
+    - fib-app.prod.gt.com
+    secretName: star.gt.com
+  rules:
+  - host: fib-app.prod.gt.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: fib-app
+            port:
+              number: 8000

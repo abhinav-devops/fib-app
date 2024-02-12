@@ -1,0 +1,26 @@
+## Vars
+variables:
+  KUBECONFIG: ${CI_PROJECT_DIR}/kube_config
+  APP: fib-app
+
+## Stages
+stages:
+- docker:build
+- docker:push
+- k8s:dev:plan
+- k8s:dev:apply
+- k8s:prod:plan
+- k8s:prod:apply
+
+## Environment Anchors
+.env:dev:
+  variables:
+    CLUSTER_NAME: fib-app-eks-dev
+    OVERLAY: dev
+    NAMESPACE: dev
+
+.env:prod:
+  variables:
+    CLUSTER_NAME: fib-app-eks-prod
+    OVERLAY: prod
+    NAMESPACE: prod

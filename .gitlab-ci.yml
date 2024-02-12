@@ -1,0 +1,6 @@
+include:
+- .gitlab-ci/00-common.yml
+- .gitlab-ci/01-build.yml
+- .gitlab-ci/02-k8s.yml
+
+

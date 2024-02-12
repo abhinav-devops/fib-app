@@ -1,0 +1,70 @@
+## k8s Anchors
+.k8s:plan:
+  image: jedi0213/kubectl-kustomize:2
+  allow_failure: true
+  only:
+  - branches
+  - tags
+  - merge_requests
+  script:
+  ## Install base-services
+  - cd "k8s/overlays/dev"
+
+  #- kustomize edit set image ${IMAGE_FULL_NAME}
+  #- aws eks --region us-east-1 update-kubeconfig --name ${CLUSTER_NAME}
+
+  ## Set Kubernetes Config
+  - export KUBECONFIG=~/.kube/config
+  - export FLAGS="$([ "$APPLY" == true ] && echo "--yes" || echo "--diff-run")" && echo "Flags $FLAGS"
+  - kapp deploy --color --diff-changes --namespace $NAMESPACE  --app $KAPP --file <(kustomize build .) $FLAGS
+
+.k8s:apply:
+  extends:
+  - .k8s:plan
+  when: manual
+  variables:
+    APPLY: "true"
+
+
+## Dev Jobs
+01:dev:k8s:plan:
+  dependencies:
+  - docker:push
+  needs:
+  - docker:push
+  extends:
+  - .k8s:plan
+  - .env:dev
+  stage: k8s:dev:plan
+
+01:dev:k8s:apply:
+  dependencies:
+  - 01:dev:k8s:plan
+  needs:
+  - 01:dev:k8s:plan
+  extends:
+  - .k8s:apply
+  - .env:dev
+  stage: k8s:dev:apply
+
+
+## Prod Jobs
+01:prod:k8s:plan:
+  dependencies:
+  - docker:push
+  needs:
+  - docker:push
+  extends:
+  - .k8s:plan
+  - .env:prod
+  stage: k8s:prod:plan
+
+01:prod:k8s:apply:
+  dependencies:
+  - 01:prod:k8s:plan
+  needs:
+  - 01:prod:k8s:plan
+  extends:
+  - .k8s:apply
+  - .env:prod
+  stage: k8s:prod:apply

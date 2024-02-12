@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fib-app
+  labels: {}
+spec:
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  replicas: 3
+  selector:
+    matchLabels: {}
+  template:
+    metadata:
+      labels: {}
+    spec:
+      terminationGracePeriodSeconds: 600
+      serviceAccountName: fib-app
+      imagePullSecrets:
+      - name: gl-docker-pull-secret
+      containers:
+      - name: deployment
+        image: registry.gitlab.com/gt-py-app/fib-app
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        env:
+        - name: ENV
+          value: prod
+        - name: APP_NAME
+          value: "fib-app"
+        - name: prod
+          value: "true"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
